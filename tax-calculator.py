@@ -8,7 +8,7 @@ Usage:
 import sys
 import argparse
 
-# Income is a Number. Your yearly income
+# Income is your yearly income
 # 
 # Income Segment is a portion of your income that falls within a tax bracket.
 #
@@ -16,22 +16,21 @@ import argparse
 # it represents the tax rates per segment of income.
 # 
 # Tax Bracket is a tuple (Threshold, Rate).
-# Threshold is the lower threshold for the rate of this income bracket.  So for the nz tax bracket 78,100 - 180,000, the threshold is 78,100.
+# Threshold is the lower threshold for the rate of this income bracket.  So for the NZ tax bracket 78,100 - 180,000, the threshold is 78,100.
 #
-# Total Owed is the full sum of tax owed for each segment of your income.
+# Total Owed is the sum of tax owed for each segment of your income.
+# 
+# Income Remaining is a number representing the portion of your income that has not yet been taxed.
 #
-# To determine Total owed, then, you can take each segment starting from the highest valid tax bracket, calculate how much is owed for htis segment, add this to the tally, and then do it again for the next segment.
+# To determine total owed, you can take each segment starting from the highest valid tax bracket, calculate how much is owed for that segment and add this to the tally.
 #
-# As you calculate each bracket from highest to lowest, you can remove that segment from the income remaining to be taxed.  This gives us one more data point.
+# As you calculate each bracket from highest to lowest, you can remove that segment from the income remaining to be taxed.  
 #
-# Income Remaining is a number representing the portion ofyour income that has not yet been taxed.
-#
-# In other words, you can recurse over the total remaining and keep a running tally of total owed. Continue to run the function utnil the remaining income is 0 (all segments have been taxed) and then grab the final total.
+# In other words, you can recurse over the total remaining and keep a running tally of total owed. Continue to recur the function until the remaining income is 0 (all segments have been taxed) and then grab the final total.
 
-# Number -> Threshold, Rate
 def determine_tax_bracket(income):
-"""given income, determine highest threshold it qualifies for and return that threshold and its rate.
-"""
+  """given income, determine highest threshold it qualifies for and return that threshold and its rate.
+  """
   if income > 180000:
     return 180000, .39
   elif income > 78100:
