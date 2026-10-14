@@ -8,68 +8,66 @@ Usage:
 import sys
 import argparse
 
-# 1. define the problem and the data
-# 2. define function signature
-# 3. write examples (tests)
-# 4. fill out function to handle your examples
-# 5. run the program, see the tests pass, celebrate
-#
-# PROBLEM
-# given income, return amount of tax owed, with tax rate based on NZ tax bracket.
+# Income is a Number. Your yearly income
 # 
-# DATA
-# Income, Tax Amount, Tax Rate
+# Income Segment is a portion of your income that falls within a tax bracket.
 #
-# INCOME and TAX AMOUNT are numbers.
+# NZ Tax Bracket is the rates given  on ird.govt.nz.
+# it represents the tax rates per segment of income.
+# 
+# Tax Bracket is a tuple (Threshold, Rate).
+# Threshold is the lower threshold for the rate of this income bracket.  So for the nz tax bracket 78,100 - 180,000, the threshold is 78,100.
 #
-# Income is a Number, a person's yearly income
+# Total Owed is the full sum of tax owed for each segment of your income.
 #
-# Tax Amount is a Number.  It is a product of Income and Tax Rate.
+# To determine Total owed, then, you can take each segment starting from the highest valid tax bracket, calculate how much is owed for htis segment, add this to the tally, and then do it again for the next segment.
 #
-# Tax Rate is a Number, representing the rate based on the income tax bracket.  It is one of:
-# - .105 if income is between 0 and 15,600
-# - .175 if income is between 15,601 and 53,500
-# - .30 if income is between 53,501 and 78,100
-# - .33 if income is between 78,101 and 180,000
-# - .39 if income is 180,001 and up
+# As you calculate each bracket from highest to lowest, you can remove that segment from the income remaining to be taxed.  This gives us one more data point.
+#
+# Income Remaining is a number representing the portion ofyour income that has not yet been taxed.
+#
+# In other words, you can recurse over the total remaining and keep a running tally of total owed. Continue to run the function utnil the remaining income is 0 (all segments have been taxed) and then grab the final total.
 
-# Income -> Tax Amount
-def tax_calculator(income):
-  """given income, return amount owed.
-     the Tax rate is baed on NZ tax brackets.
+# Number -> Threshold, Rate
+def determine_tax_bracket(income):
+"""given income, determine highest threshold it qualifies for and return that threshold and its rate.
+"""
+  if income > 180000:
+    return 180000, .39
+  elif income > 78100:
+    return 78100, .33
+  elif income > 53500:
+    return 53500, .30
+  elif income > 15600:
+    return 15600, .175
+  else:
+    return 0, .105
 
-  0-15,600: .105 
-  >>> tax_calculator(1000)
-  105.0
+def tax_calculator(income_remaining, total_owed):
+  """ recurse on the remaining income, calculating
+  total owed per income segment from highest valid bracket downward, until there is no more income to be taxed. return
+  the total tax remaining and the total owed.
 
-  15,601 - 53,500: .175 
-  >>> tax_calculator(30000)
-  5250.0
-
-  53,501 - 78,100: .30
-  >>> tax_calculator(60000)
-  18000.0
-
-  78,100 - 18,000: .30
-  >>> tax_calculator(100000)
-  33000.0
-  
-  180,000 and up: .39
-  >>> tax_calculator(500000)
-  195000.0
+  >>> tax_calculator(200000, 0)
+  (0, 57077.5)
+  >>> tax_calculator(195000,0)
+  (0, 55127.5)
+  >>> tax_calculator(82100,0)
+  (0, 16970.5)
+  >>> tax_calculator(65000,0)
+  (0, 11720.5)
+  >>> tax_calculator(35000,0)
+  (0, 5033.0)
+  >>> tax_calculator(5200,0)
+  (0, 546.0)
   """
-  tax_rate = 0
-  if 0 <= income <= 15600:
-    tax_rate = .105
-  elif 15601 <= income <= 53500:
-    tax_rate = .175
-  elif 53501 <= income <= 78100:
-    tax_rate = .30
-  elif 78101 <= income <= 180000:
-    tax_rate = .33
-  elif 180001 <= income:
-    tax_rate = .39
-  return income * tax_rate
+  if income_remaining == 0:
+    return income_remaining, total_owed
+  else:
+    threshold, tax_rate = determine_tax_bracket(income_remaining)
+    income_segment = income_remaining - threshold
+    total_owed += income_segment * tax_rate 
+    return tax_calculator(threshold, total_owed)
 
 def main(argv):
   parser = argparse.ArgumentParser(
@@ -82,7 +80,8 @@ def main(argv):
     help="income is a number to calculate (e.g., 1000 or 5250.25)"
   )
   args = parser.parse_args(argv[1:])
-  print(tax_calculator(args.income))
+  income_remaining, total_owed = tax_calculator(args.income, 0)
+  print(total_owed)
 
 if __name__ == "__main__":
   if "--test" in sys.argv:
